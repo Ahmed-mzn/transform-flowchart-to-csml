@@ -1,5 +1,5 @@
 # Description
-Transform flowchart to xml based on some custom nodes like : 
+Transform flowchart to csml based on some custom nodes like : 
 
 - StartNode(start of code)
 - SayTextNode(print text)
