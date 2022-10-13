@@ -1,4 +1,9 @@
-# best
+# Description
+transform flowchart to xml based on some custom nodes like : 
+
+- StartNode(start of code)
+- SayTextNode(print text)
+- SwitchNode(list of cases)
 
 ## Project setup
 ```
