@@ -1,58 +1,68 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
-  </div>
+    <div style="height: 100vh; width: 100vw">
+      <button @click="test()">click</button>
+        <hint-overlay />
+        <baklava-editor :plugin="viewPlugin" />
+    </div>
 </template>
 
 <script>
+import HintOverlay from "../HintOverlay.vue";
+import { Editor } from "@baklavajs/core";
+import { ViewPlugin } from "@baklavajs/plugin-renderer-vue";
+import { OptionPlugin } from "@baklavajs/plugin-options-vue";
+import { Engine } from "@baklavajs/plugin-engine";
+import { MathNode } from "../MathNode";
+import { DisplayNode } from "../DisplayNode";
 export default {
   name: 'HelloWorld',
-  props: {
-    msg: String
-  }
+    components: { HintOverlay },
+    data() {
+        return {
+            editor: new Editor(),
+            viewPlugin: new ViewPlugin(),
+            engine: new Engine(true),
+            ahmed:""
+        };
+    },
+    created() {
+        // Register the plugins
+        // The view plugin is used for rendering the nodes
+        this.editor.use(this.viewPlugin);
+        // The option plugin provides some default option UI elements
+        this.editor.use(new OptionPlugin());
+        // The engine plugin calculates the nodes in the graph in the
+        // correct order using the "calculate" methods of the nodes
+        this.editor.use(this.engine);
+
+        // Show a minimap in the top right corner
+        this.viewPlugin.enableMinimap = true;
+
+        // register the nodes we have defined, so they can be
+        // added by the user as well as saved & loaded.
+        this.editor.registerNodeType("MathNode", MathNode);
+        this.editor.registerNodeType("DisplayNode", DisplayNode);
+
+        // add some nodes so the screen is not empty on startup
+        const node1 = this.addNodeWithCoordinates(MathNode, 100, 140);
+        const node2 = this.addNodeWithCoordinates(DisplayNode, 400, 140);
+        this.editor.addConnection(node1.getInterface("Result"), node2.getInterface("Value"));
+        this.engine.calculate();
+    },
+    methods: {
+      test(){
+        console.log(this.editor);
+        console.log(this.viewPlugin);
+        console.log(this.engine);
+      },
+        addNodeWithCoordinates(nodeType, x, y) {
+            const n = new nodeType();
+            this.editor.addNode(n);
+            n.position.x = x;
+            n.position.y = y;
+            return n;
+        }
+    }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
-</style>
